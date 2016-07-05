@@ -7,9 +7,11 @@ import android.graphics.Color;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathDashPathEffect;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -42,6 +44,9 @@ public class ViewPagerIndicator extends LinearLayout {
 	private int mInitTranslationX;
 	private int mTranslationX = 0;
 	private int mTabVisibleCount;
+
+	private int mLineStartX;
+	private int mLineStartY;
 
 	private List<String> mTitles;
 	private Paint mPaint;
@@ -136,11 +141,18 @@ public class ViewPagerIndicator extends LinearLayout {
 
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
+
 		canvas.save();
+
 		canvas.translate(mInitTranslationX + mTranslationX, getHeight() + 2);
 		canvas.drawPath(mPath, mPaint);
 
 		canvas.restore();
+		//draw seperator line
+		int tabWidth = getWidth() / mTabVisibleCount;
+		for (int i = 1; i < getChildCount(); i++) {
+			canvas.drawLine(tabWidth * i, 30, tabWidth * i, 60, mPaint);
+		}
 
 		super.dispatchDraw(canvas);
 	}
@@ -196,11 +208,15 @@ public class ViewPagerIndicator extends LinearLayout {
 	}
 
 	private void scroll(int position, float offset) {
-//		Log.d(TAG, "scroll() called with: " + "position = [" + position + "], offset = [" + offset + "]");
+		Log.d(TAG, "scroll() called with: " + "position = [" + position + "], offset = [" + offset + "]");
 		int tabWidth = getWidth() / mTabVisibleCount;
 		mTranslationX = (int) ((offset + position) * tabWidth);
 		//容器移动,在tab处于移动至最后一个时
-		if (position >= (mTabVisibleCount - 2) && offset > 0 && getChildCount() > mTabVisibleCount) {
+		int count = getChildCount();
+		if (count > mTabVisibleCount &&
+				position >= (mTabVisibleCount - 2) &&
+				position < (count - 2)) {
+
 			int x;
 			if (mTabVisibleCount != 1) {
 				x = (position - (mTabVisibleCount - 2)) * tabWidth + (int) (tabWidth * offset);

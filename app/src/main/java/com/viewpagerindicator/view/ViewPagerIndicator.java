@@ -38,15 +38,16 @@ public class ViewPagerIndicator extends LinearLayout {
 	private static final int COLOR_TEXT_HIGHLIGHT = 0xffffffff;
 
 	private static final int COUNT_DEFAULT_TAB = 4;
+	private static final int INDICATOR_TYPE_TRIANGLE = 0;
+	private static final int INDICATOR_TYPE_LINE = 1;
 
 	private int mTriangleWidth;
 	private int mTriangleHeight;
 	private int mInitTranslationX;
 	private int mTranslationX = 0;
 	private int mTabVisibleCount;
-
-	private int mLineStartX;
-	private int mLineStartY;
+	private int mLineIndicatorWidth;
+	private int mIndicatorType;
 
 	private List<String> mTitles;
 	private Paint mPaint;
@@ -67,6 +68,8 @@ public class ViewPagerIndicator extends LinearLayout {
 		if (mTabVisibleCount < 0) {
 			mTabVisibleCount = COUNT_DEFAULT_TAB;
 		}
+		mIndicatorType = ta.getInt(R.styleable.ViewPagerIndicator_type, INDICATOR_TYPE_TRIANGLE);
+
 		ta.recycle();
 
 		//初始化画笔
@@ -139,16 +142,35 @@ public class ViewPagerIndicator extends LinearLayout {
 		}
 	}
 
+	/**
+	 * 设置indicator的类型:三角箭头指示或线条指示
+	 * @param type int(INDICATOR_TYPE_TRIANGLE/INDICATOR_TYPE_LINE)
+	 */
+	public void setType(int type){
+		mIndicatorType = type;
+	}
+
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
 
 		canvas.save();
 
-		canvas.translate(mInitTranslationX + mTranslationX, getHeight() + 2);
-		canvas.drawPath(mPath, mPaint);
+		if(mIndicatorType == INDICATOR_TYPE_TRIANGLE){
+			mPaint.setColor(Color.parseColor("#ffffffff"));
+			canvas.translate(mInitTranslationX + mTranslationX, getHeight() + 2);
+			canvas.drawPath(mPath, mPaint);
+		}else{
+			mPaint.setStrokeWidth(8);
+			mPaint.setColor(Color.parseColor("#ddff0000"));
+			canvas.translate(mTranslationX, getHeight() - 4);
+			canvas.drawLine(0, 0, mLineIndicatorWidth, 0, mPaint);
+		}
 
 		canvas.restore();
+
 		//draw seperator line
+		mPaint.setStrokeWidth(1);
+		mPaint.setColor(Color.parseColor("#ffffffff"));
 		int tabWidth = getWidth() / mTabVisibleCount;
 		for (int i = 1; i < getChildCount(); i++) {
 			canvas.drawLine(tabWidth * i, 30, tabWidth * i, 60, mPaint);
@@ -161,6 +183,7 @@ public class ViewPagerIndicator extends LinearLayout {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 
+		mLineIndicatorWidth = w / mTabVisibleCount;
 		mTriangleWidth = (int) (w / mTabVisibleCount * RADIO_TRIANGLE_WIDTH);
 		mTriangleWidth = Math.min(mTriangleWidth, DIMENSION_TRIANGLE_WIDTH_MAX);
 		mInitTranslationX = w / mTabVisibleCount / 2 - mTriangleWidth / 2;
@@ -256,10 +279,10 @@ public class ViewPagerIndicator extends LinearLayout {
 	private void highLightTextView(int pos) {
 		for (int i = 0; i < getChildCount(); i++) {
 			View view = getChildAt(i);
-			if(view instanceof TextView){
-				if(i == pos){
+			if (view instanceof TextView) {
+				if (i == pos) {
 					((TextView) view).setTextColor(COLOR_TEXT_HIGHLIGHT);
-				}else{
+				} else {
 					((TextView) view).setTextColor(COLOR_TEXT_NORMAL);
 				}
 			}

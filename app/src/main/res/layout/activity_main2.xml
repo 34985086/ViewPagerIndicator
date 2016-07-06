@@ -13,7 +13,9 @@
         android:layout_height="45dp"
         android:background="@color/colorIndicatorBg"
         android:orientation="horizontal"
-        gavin:visible_tab_count="4">
+        gavin:visible_tab_count="4"
+        gavin:type="line"
+        >
     </com.viewpagerindicator.view.ViewPagerIndicator>
 
     <android.support.v4.view.ViewPager
